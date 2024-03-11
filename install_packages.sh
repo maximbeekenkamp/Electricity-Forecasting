@@ -13,6 +13,6 @@ if ! command -v pip3 &> /dev/null; then
 fi
 
 # Install required packages
-pip3 install tensorflow numpy scipy pandas matplotlib
+pip3 install tensorflow scipy pandas matplotlib
 
 echo "Packages installed successfully."

@@ -4,7 +4,8 @@
 
 ## Use Guide
 
-This code was written in Python 3.11.4, and uses the following packages: 
+This code was written in Python 3.11.4, and uses the following packages:
+
 - tensorflow
 - pandas
 - numpy
@@ -15,7 +16,21 @@ If you don't have these packages installed, refer to the installation section fo
 
 ### Installation
 
-To install the required packages, you will need Python 3 and pip installed. Then, run the following bash script:
+To install the required packages, you will need Python 3.8–3.11 and pip version >19.0 (or >20.3 for macOS) installed. 
+
+To check if you have a compatible version of Python installed, run the following command in the terminal:
+
+```bash
+python --version
+```
+
+And to update pip, run the following command in the terminal:
+
+```bash
+pip install --upgrade pip
+```
+
+Then to install packages, run the following bash script:
 
 ```bash
 chmod +x install_packages.sh
