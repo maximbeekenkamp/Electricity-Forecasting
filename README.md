@@ -2,6 +2,42 @@
 
 # Forecasting the regional impact of energy investments on the cost of electricity.
 
+## Use Guide
+
+This code was written in Python 3.11.4, and uses the following packages: 
+- tensorflow
+- pandas
+- numpy
+- scipy
+- matplotlib
+
+If you don't have these packages installed, refer to the installation section for a bash script that will install all of these packages.
+
+### Installation
+
+To install the required packages, you will need Python 3 and pip installed. Then, run the following bash script:
+
+```bash
+chmod +x install_packages.sh
+./install_packages.sh
+```
+
+### Running the code
+
+To run the code, you have two options. If this is your first time running the code, you will need to build the model. This can be done by running the following command in the terminal:
+
+```bash
+python main.py
+```
+
+However, if you have already built the model, and you want to load your model, you can simply run the following command in the terminal:
+
+```bash
+python main.py --load
+```
+
+To expand the program to include more states, or to adjust the hyperparameters of the model, you can edit the `main.py` file. More extensive changes to the data or model will require changes to the `preprocessing.py` and `model.py` files respectively.
+
 ## Introduction
 
 As the demand for sustainable energy solutions increases, it becomes essential to understand the regional economic implications of clean energy investments due to the non-transferable nature of clean electricity production. Integral to Biden's Inflation Reduction Act are tax credits for clean energy investments, but what will their impact be? Through the use of historical investment data this project aims to predict the specific impact on electricity bills of current clean energy investments on regional economies through the Inflation Reduction Act.

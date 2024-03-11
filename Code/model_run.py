@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import time
 import scipy.io as io
+import matplotlib.pyplot as plt
 
 from Code.preprocessing import DataSet
 from Code.fnn import FNN
