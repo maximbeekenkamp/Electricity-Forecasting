@@ -55,8 +55,8 @@ import pandas as pd
 np.random.seed(1234)
 
 class DataSet:
-    def __init__(self) -> None:
-        self.states = ["KY", "TN", "AL", "MS", "GA", "SC", "NC", "FL"]
+    def __init__(self, states) -> None:
+        self.states = states
         self.x_train, self.y_train, self.x_test, self.y_test, self.x_pred = self.load_data()
     
     def load_data(self):
