@@ -16,25 +16,25 @@ class FNN:
         Returns:
             Tuple: Initialised weights and biases.
         """
-        with tf.device('/CPU:0'): # if running on laptop running Apple Silicon, comment and de-tab otherwise
-            L = len(layers)
-            W = []
-            b = []
-            for l in range(1, L):
-                in_dim = layers[l - 1]
-                out_dim = layers[l]
-                std = np.sqrt(2.0 / (in_dim + out_dim))
-                weight = tf.Variable(
-                    tf.random.normal(shape=[in_dim, out_dim], stddev=std, dtype=self.tf_data_type),
-                    dtype=self.tf_data_type
-                )
-                bias = tf.Variable(
-                    tf.zeros(shape=[1, out_dim], dtype=self.tf_data_type),
-                    dtype=self.tf_data_type
-                )
+        # with tf.device('/CPU:0'): # NOTE: if running on Apple Silicon without tensorflow-metal, de-comment and tab below
+        L = len(layers)
+        W = []
+        b = []
+        for l in range(1, L):
+            in_dim = layers[l - 1]
+            out_dim = layers[l]
+            std = np.sqrt(2.0 / (in_dim + out_dim))
+            weight = tf.Variable(
+                tf.random.normal(shape=[in_dim, out_dim], stddev=std, dtype=self.tf_data_type),
+                dtype=self.tf_data_type
+            )
+            bias = tf.Variable(
+                tf.zeros(shape=[1, out_dim], dtype=self.tf_data_type),
+                dtype=self.tf_data_type
+            )
 
-                W.append(weight)
-                b.append(bias)
+            W.append(weight)
+            b.append(bias)
         return W, b
 
     def fnn(self, W, b, X):
@@ -51,7 +51,10 @@ class FNN:
         """
         L = len(W)
         for i in range(L - 1):
-            X = tf.nn.leaky_relu(tf.add(tf.matmul(X, W[i]), b[i]))
+            print("X", X)
+            print("W[i]", W[i])
+            tf.matmul(tf.Variable(X), W[i])
+            X = tf.nn.leaky_relu(tf.add(tf.matmul(tf.Variable(X), W[i]), b[i]))
         Y = tf.nn.relu(tf.add(tf.matmul(X, W[-1]), b[-1]))
 
         return Y

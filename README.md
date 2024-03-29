@@ -11,12 +11,13 @@ This code was written in Python 3.11.4, and uses the following packages:
 - numpy
 - scipy
 - matplotlib
+- scikit-learn
 
 If you don't have these packages installed, refer to the installation section for a bash script that will install all of these packages.
 
 ### Installation
 
-To install the required packages, you will need Python 3.8–3.11 and pip version >19.0 (or >20.3 for macOS) installed. 
+To install the required packages, you will need Python 3.8–3.11 and pip version >19.0 (or >20.3 for macOS) installed. For mac users on Apple Silicon, you will also need to install the `tensorflow-macos` package so that the code can run on GPU.
 
 To check if you have a compatible version of Python installed, run the following command in the terminal:
 
@@ -51,7 +52,7 @@ However, if you have already built the model, and you want to load your model, y
 python main.py --load
 ```
 
-To expand the program to include more states, or to adjust the hyperparameters of the model, you can edit the `main.py` file. More extensive changes to the data or model will require changes to the `preprocessing.py` and `model.py` files respectively.
+To expand the program to include more states, or to adjust the hyperparameters of the model, you can edit the `main.py` file. More extensive changes to the data or model will require changes to the `preprocessing.py` and `model_run.py` files respectively.
 
 ## Introduction
 
@@ -63,19 +64,17 @@ Currently the program is designed to focus on the Southeastern United States, (K
 
 ## Data Sources and Descriptions
 
-All data is downloaded from the U.S. Energy Information Administration (EIA) website. The data was downloaded in the form of Excel files (.xlsx) and needed to be converted to .csv files. Whilst converting the data to .csv files, I removed non-relevant sheet tabs. This was done to reduce the overall file size of this project, but also in converting .xlsx files with sheets to .csv files (which have no sheets) is a bit of a mess. Additionally, I removed the 1990-2000 data from the sales_revenue data as it was not relevant to the project, and because it was a trivial operation due to the way the file was structured. It's easier to do some of these simple operations at this stage rather than in the preprocessing script. Otherwise, however, the data is unaltered and is identical to the data available on the EIA website (see sources).
+All data is downloaded from the U.S. Energy Information Administration (EIA) website. The data was downloaded in the form of Excel files (.xlsx) and needed to be converted to .csv files. Whilst converting the data to .csv files, I removed non-relevant sheet tabs. This was done to reduce the overall file size of this project, but also in converting .xlsx files with sheets to .csv files (which have no sheets) is a bit of a mess. Additionally, I removed the 1990-2000 data from the sales_revenue data as it was not relevant to the project, and because it was a trivial operation due to the way the file was structured. It's easier to do some of these simple operations at this stage rather than in the preprocessing script. Additionally, I've chosen to change the 2007 consumer data, this is discussed in greater detail in the Consumer Number Prediction Model section. Otherwise, however, the data is unaltered and is identical to the data available on the EIA website (see sources).
 
 The data was then processed by the preprocessing script. Here is a brief overview of the data that remained after preprocessing, divided by file origin:
 
 - `sales_revenue.csv` (2001-2009 & 2010-2023)
-
   - year
   - state
   - price (cents/kWh)
   - number of consumers
 
 - `generation_monthly.csv`
-
   - year
   - state
   - energy source type
@@ -98,7 +97,6 @@ Due to the non-linear nature of the data, a neural network model will be used to
 - year
 - state
 - consumers
-- price
 - coal capacity
 - geothermal capacity
 - hydroelectric conventional capacity
@@ -118,9 +116,13 @@ After training and testing, which in this case is effectively validation, the mo
 
 ### Consumer Number Prediction Model
 
-Additional to the neural network, a simple linear model will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. Even though the number of consumers is unlikely to be linear, it seems like a reasonable estimate for the purposes of this project. A more complex model for the number of consumers could easily be added in the future.
+Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and an exponential model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in `consumer_growth.py`. You can change the model used in `preprocessing.py` under the `y_data` and `pred_data` functions.
 
-Pre-2007 the EIA seemingly did not collect consumer number data, so this same linear model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the linear model, and could be changed if the data was available.
+Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in `consumer_growth.py` under the `make_linear_model` and `apply_linear_model` functions.
+
+<img src="Data/Images/2007Consumers_MS.jpg" height="300">
+
+<img src="Data/Images/2007Consumers_FL.jpg" height="300">
 
 ## Results
 

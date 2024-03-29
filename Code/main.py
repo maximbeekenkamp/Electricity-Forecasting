@@ -5,14 +5,16 @@ import scipy.io as io
 import shutil
 import argparse
 
-from Code.model_run import Runner
+from model_run import Runner
 
 np.random.seed(1234)
 tf_data_type = tf.float64
+tf.config.list_physical_devices("GPU")
 tf.keras.backend.clear_session()
 
 def main(load_model):
     # Create directories
+    tf.config.list_physical_devices('GPU') # NOTE: if running on Apple Silicon without tensorflow-metal, you have to run on CPU
     current_directory = os.getcwd()
     model_dir = "/Saved_Model"
     save_model_to = current_directory + model_dir
@@ -25,7 +27,7 @@ def main(load_model):
         os.makedirs(save_model_to)
 
     hyperparameters = {
-        "net": [2, 8, 8, 8],
+        "net": [8, 8, 8, 8],
         "bs": 50,
         "tsbs": 20,
         "epochs": 200,
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("--load", action="store_true", help="Load model from Saved_Model directory")
     args = parser.parse_args()
 
-    if args.load_model:
+    if args.load:
         load_model = True
     else:
         load_model = False

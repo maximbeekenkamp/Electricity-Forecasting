@@ -4,8 +4,8 @@ import time
 import scipy.io as io
 import matplotlib.pyplot as plt
 
-from Code.preprocessing import DataSet
-from Code.fnn import FNN
+from preprocessing import DataSet
+from fnn import FNN
 
 
 class Runner:
@@ -29,7 +29,7 @@ class Runner:
         if not load_model_bool:
             start_time = time.perf_counter()
             time_step_0 = time.perf_counter()
-            self.builder(model, hyperparameters)
+            self.builder(hyperparameters, save_model_to, model, param)
             stop_time = time.perf_counter()
             print("Elapsed time (secs): %.3f" % (stop_time - start_time))
         
