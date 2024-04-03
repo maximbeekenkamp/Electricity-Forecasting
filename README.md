@@ -52,7 +52,7 @@ However, if you have already built the model, and you want to load your model, y
 python main.py --load
 ```
 
-To expand the program to include more states, or to adjust the hyperparameters of the model, you can edit the `main.py` file. More extensive changes to the data or model will require changes to the `preprocessing.py` and `model_run.py` files respectively.
+To expand the program to include more states, or to adjust the hyperparameters of the model, you can edit the [`main.py`](Code/main.py) file. More extensive changes to the data or model will require changes to the [`preprocessing.py`](Code/preprocessing.py) and [`model_run.py`](Code/model_run.py) files respectively.
 
 ## Introduction
 
@@ -118,24 +118,20 @@ Due to the non-linear nature of the data, a neural network model will be used to
 
 Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minibatch training. For each layer $i$ the following formula is used to calculate the forward pass:
 
-```math
-$$X = \max(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i])$$
-```
+$$`X = \max\left(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i]\right)`$$
 
 Where:
 - $X$ matrix containing the data for the layer;
-- $\max(0.01 \cdot a, b)$ leaky ReLU activation function;
+- $`\max(0.01 \cdot a, b)`$ leaky ReLU activation function;
 - $W[i]$ matrix containing the weights of the layer;
 - $b[i]$ vector representing the biases of the layer;
 
 On the final layer, ReLU is used instead of the leaky ReLU function:
 
-```math
-$$Y = \max(0, X \cdot W[-1] + b[-1])$$
-```
+$$`Y = \max(0, X \cdot W[-1] + b[-1])`$$
 
 Where:
-- $\max(0, a)$ ReLU activation function;
+- $`\max(0, a)`$ ReLU activation function;
 
 The model is trained using the Adam optimiser and mean squared error loss function:
 
@@ -152,9 +148,9 @@ After training and testing, which in this case is effectively validation, the mo
 
 ### Consumer Number Prediction Model
 
-Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and a population model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in `consumer_growth.py`. You can change the model used in `preprocessing.py` under the `y_data` and `pred_data` functions.
+Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and a population model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in [`consumer_growth.py`](Code/consumer_growth.py). You can change the model used in [`preprocessing.py`](Code/preprocessing.py) under the `y_data` and `pred_data` functions.
 
-Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in `consumer_growth.py` under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
+Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in [`consumer_growth.py`](Code/consumer_growth.py) under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
 
 <img src="Data/Images/2007Consumers_MS.jpg" height="300">
 
