@@ -64,27 +64,27 @@ Currently the program is designed to focus on the Southeastern United States, (K
 
 ## Data Sources and Descriptions
 
-All data is downloaded from the U.S. Energy Information Administration (EIA) website. The data was downloaded in the form of Excel files (.xlsx) and needed to be converted to .csv files. Whilst converting the data to .csv files, I removed non-relevant sheet tabs. This was done to reduce the overall file size of this project, but also in converting .xlsx files with sheets to .csv files (which have no sheets) is a bit of a mess. Additionally, I removed the 1990-2000 data from the sales_revenue data as it was not relevant to the project, and removed the embedded headers from the sales files which are not correctly interpreted when converting to .csv. This was done manually as they were trivial operations due to the way the file was structured. In my experience it's easier to do some of these simple operations at this stage rather than in the preprocessing script. Additionally, I've chosen to use generated data for the number of consumers in 2007, this is discussed in greater detail in the Consumer Number Prediction Model section. Otherwise, however, the data is unaltered and is identical to the data available on the EIA website (see sources).
+All data is downloaded from the U.S. Energy Information Administration (EIA) website. The data was downloaded in the form of Excel files (.xlsx) and needed to be converted to .csv files. Whilst converting the data to .csv files, I removed non-relevant sheet tabs. This was done to reduce the overall file size of this project, but also in converting .xlsx files with sheets to .csv files (which have no sheets) is a bit of a mess. Additionally, I removed the 1990-2000 data from the sales_revenue data as it was not relevant to the project, and removed the embedded headers from the sales files which are not correctly interpreted when converting to .csv. This was done manually as they were trivial operations due to the way the file was structured. In my experience it's easier to do some of these simple operations at this stage rather than in the preprocessing script. Additionally, I've chosen to use generated data for the number of consumers in 2007, this is discussed in greater detail in the Consumer Number Prediction Model section. Otherwise, however, the data is unaltered and is identical to the data available on the EIA website [^1] [^2] [^3] [^4].
 
 TODO: Add a brief description of the new population data.
 
 The data was then processed by the preprocessing script. Here is a brief overview of the data that remained after preprocessing, divided by file origin:
 
-- `sales_revenue.csv` (2001-2009 & 2010-2023)
+- `sales_revenue.csv` [^1] [^2] (2001-2009 & 2010-2023)
 
   - year
   - state
   - price (cents/kWh)
   - number of consumers
 
-- `generation_monthly.csv`
+- `generation_monthly.csv` [^3]
 
   - year
   - state
   - energy source type
   - capacity (MWh)
 
-- `plancapacity_annual.csv`
+- `plancapacity_annual.csv` [^4]
   - year
   - state
   - energy source type
@@ -118,20 +118,20 @@ Due to the non-linear nature of the data, a neural network model will be used to
 
 Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minibatch training. For each layer $i$ the following formula is used to calculate the forward pass:
 
-$$`X = \max\left(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i]\right)`$$
+$$X = \max\left(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i]\right)$$
 
 Where:
 - $X$ matrix containing the data for the layer;
-- $`\max(0.01 \cdot a, b)`$ leaky ReLU activation function;
+- $\max(0.01 \cdot a, b)$ leaky ReLU activation function;
 - $W[i]$ matrix containing the weights of the layer;
 - $b[i]$ vector representing the biases of the layer;
 
 On the final layer, ReLU is used instead of the leaky ReLU function:
 
-$$`Y = \max(0, X \cdot W[-1] + b[-1])`$$
+$$Y = \max(0, X \cdot W[-1] + b[-1])$$
 
 Where:
-- $`\max(0, a)`$ ReLU activation function;
+- $\max(0, a)$ ReLU activation function;
 
 The model is trained using the Adam optimiser and mean squared error loss function:
 
@@ -150,6 +150,7 @@ After training and testing, which in this case is effectively validation, the mo
 
 Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and a population model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in [`consumer_growth.py`](Code/consumer_growth.py). You can change the model used in [`preprocessing.py`](Code/preprocessing.py) under the `y_data` and `pred_data` functions.
 
+[!NOTE]
 Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in [`consumer_growth.py`](Code/consumer_growth.py) under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
 
 <img src="Data/Images/2007Consumers_MS.jpg" height="300">
@@ -170,14 +171,14 @@ As the model hasn't been run yet I don't know if I was able to answer my researc
 
 ## References
 
-`Data/sales_revenue_2001-2009.csv`: <br>
+[^1]: `Data/sales_revenue_2001-2009.csv`: <br>
 [U.S. Energy Information Administration - FORM EIA-861M (FORMERLY EIA-826), Sales and Revenue - 1990-2009](https://www.eia.gov/electricity/data/eia861m/#netmeter) (released: 2/26/2024) <br><br>
 
-`Data/sales_revenue_2010-2023.csv`: <br>
+[^2]: `Data/sales_revenue_2010-2023.csv`: <br>
 [U.S. Energy Information Administration - FORM EIA-861M (FORMERLY EIA-826), Sales and Revenue - 2010-current](https://www.eia.gov/electricity/data/eia861m/#netmeter) (released: 2/26/2024) <br><br>
 
-`Data/generation_monthly.csv`: <br>
+[^3]: `Data/generation_monthly.csv`: <br>
 [U.S. Energy Information Administration - EIA-923 Power Plant Operations Report, Net Generation by State by Type of Producer by Energy Source - 2001-present](https://www.eia.gov/electricity/data/state/) (released: 10/26/2023) <br><br>
 
-`Data/plancapacity_annual.csv`: <br>
+[^4]: `Data/plancapacity_annual.csv`: <br>
 [U.S. Energy Information Administration - EIA-860 Annual Electric Generator Report, Proposed Nameplate and Net Summer Capacity by Year, Energy Source, and State (EIA-860) - 2023-2027](https://www.eia.gov/electricity/data/state/) (released: 9/20/2023)
