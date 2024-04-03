@@ -12,6 +12,7 @@ tf_data_type = tf.float32
 # tf.config.list_physical_devices("GPU")
 tf.keras.backend.clear_session()
 
+
 def main(load_model):
     # Create directories
     # tf.config.list_physical_devices('GPU') # NOTE: if running on Apple Silicon without tensorflow-metal, you have to run on CPU
@@ -26,8 +27,8 @@ def main(load_model):
 
         os.makedirs(save_model_to)
 
-    in_dim = 23 # 15 features (see README) + 8 states
-    out_dim = 1 # 1 feature (Price)
+    in_dim = 23  # 15 features (see README) + 8 states
+    out_dim = 1  # 1 feature (Price)
 
     hyperparameters = {
         "net": [in_dim, 32, 32, 32, out_dim],
@@ -48,7 +49,9 @@ def main(load_model):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--load", action="store_true", help="Load model from Saved_Model directory")
+    parser.add_argument(
+        "--load", action="store_true", help="Load model from Saved_Model directory"
+    )
     args = parser.parse_args()
 
     if args.load:

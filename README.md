@@ -7,8 +7,8 @@
 This code was written in Python 3.11.4, and uses the following packages:
 
 - tensorflow
-- pandas
 - numpy
+- pandas
 - scipy
 - matplotlib
 - scikit-learn
@@ -64,17 +64,21 @@ Currently the program is designed to focus on the Southeastern United States, (K
 
 ## Data Sources and Descriptions
 
-All data is downloaded from the U.S. Energy Information Administration (EIA) website. The data was downloaded in the form of Excel files (.xlsx) and needed to be converted to .csv files. Whilst converting the data to .csv files, I removed non-relevant sheet tabs. This was done to reduce the overall file size of this project, but also in converting .xlsx files with sheets to .csv files (which have no sheets) is a bit of a mess. Additionally, I removed the 1990-2000 data from the sales_revenue data as it was not relevant to the project, and because it was a trivial operation due to the way the file was structured. It's easier to do some of these simple operations at this stage rather than in the preprocessing script. Additionally, I've chosen to change the 2007 consumer data, this is discussed in greater detail in the Consumer Number Prediction Model section. Otherwise, however, the data is unaltered and is identical to the data available on the EIA website (see sources).
+All data is downloaded from the U.S. Energy Information Administration (EIA) website. The data was downloaded in the form of Excel files (.xlsx) and needed to be converted to .csv files. Whilst converting the data to .csv files, I removed non-relevant sheet tabs. This was done to reduce the overall file size of this project, but also in converting .xlsx files with sheets to .csv files (which have no sheets) is a bit of a mess. Additionally, I removed the 1990-2000 data from the sales_revenue data as it was not relevant to the project, and removed the embedded headers from the sales files which are not correctly interpreted when converting to .csv. This was done manually as they were trivial operations due to the way the file was structured. In my experience it's easier to do some of these simple operations at this stage rather than in the preprocessing script. Additionally, I've chosen to use generated data for the number of consumers in 2007, this is discussed in greater detail in the Consumer Number Prediction Model section. Otherwise, however, the data is unaltered and is identical to the data available on the EIA website (see sources).
+
+TODO: Add a brief description of the new population data.
 
 The data was then processed by the preprocessing script. Here is a brief overview of the data that remained after preprocessing, divided by file origin:
 
 - `sales_revenue.csv` (2001-2009 & 2010-2023)
+
   - year
   - state
   - price (cents/kWh)
   - number of consumers
 
 - `generation_monthly.csv`
+
   - year
   - state
   - energy source type
@@ -112,19 +116,55 @@ Due to the non-linear nature of the data, a neural network model will be used to
 - wind capacity
 - wood and wood-derived fuels capacity
 
-Currently the model has layers of [23, 32, 32, 10] with full batch training. The model uses the Adam optimiser and mean squared error loss function. 
+Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minibatch training. For each layer $i$ the following formula is used to calculate the forward pass:
+
+\begin{equation}
+  X = \max(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i])
+\end{equation}
+
+Where:
+- $X$ matrix containing the data for the layer;
+- $\max(0.01 \cdot a, b)$ leaky ReLU activation function;
+- $W[i]$ matrix containing the weights of the layer;
+- $b[i]$ vector representing the biases of the layer;
+
+On the final layer, ReLU is used instead of the leaky ReLU function:
+
+\begin{equation}
+  Y = \max(0, X \cdot W[-1] + b[-1])
+\end{equation}
+
+Where:
+- $\max(0, a)$ ReLU activation function;
+
+The model is trained using the Adam optimiser and mean squared error loss function:
+
+\begin{equation}
+  L = \frac{1}{n} \sum_{i=1}^{n} (Y_{\text{pred}} - Y_{\text{true}})^2
+\end{equation}
+  
+  Where:
+- $L$ loss function;
+- $n$ number of samples;
+- $Y_{\text{pred}}$ predicted output;
+- $Y_{\text{true}}$ true output;
+
 
 After training and testing, which in this case is effectively validation, the model will be used to predict the impact of future projects. The current plan is for the model to output the marginal impact of every new type of energy investment in each of our selected states. Then after each year all of these investments will be added into the model to predict the impact of the next investments. This will be done for each year from 2023-2027.
 
 ### Consumer Number Prediction Model
 
-Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and an exponential model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in `consumer_growth.py`. You can change the model used in `preprocessing.py` under the `y_data` and `pred_data` functions.
+Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and a population model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in `consumer_growth.py`. You can change the model used in `preprocessing.py` under the `y_data` and `pred_data` functions.
 
-Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in `consumer_growth.py` under the `make_linear_model` and `apply_linear_model` functions.
+Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in `consumer_growth.py` under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
 
 <img src="Data/Images/2007Consumers_MS.jpg" height="300">
 
 <img src="Data/Images/2007Consumers_FL.jpg" height="300">
+
+Note that these images contain a linear fill for the missing data pre 2007 just to highlight the issue.
+
+The linear model is a simple linear regression model, but the population model works by taking generic population data and then creating a 'conversion' to predict the number of consumers.
 
 ## Results
 

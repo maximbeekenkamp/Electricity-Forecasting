@@ -19,7 +19,7 @@ class Runner:
         Args:
             hyperparameters (dict): Dictionary of hyperparameters.
             save_model_to (str): Directory to save model to.
-            load_mode_bool (bool): Boolean for whether the 
+            load_mode_bool (bool): Boolean for whether the
             model should be loaded in, or built.
         """
         bs = hyperparameters["bs"]
@@ -34,12 +34,11 @@ class Runner:
             self.builder(hyperparameters, save_model_to, model, param, time_step_0)
             stop_time = time.perf_counter()
             print("Elapsed time (secs): %.3f" % (stop_time - start_time))
-        
+
         loaded_model = io.loadmat(save_model_to + "/Weight_bias.mat")
         self.plot()
 
         self.forecast(loaded_model, model, param, save_model_to)
-        
 
     def builder(self, hyperparameters, save_model_to, model, param, time_step_0):
         """
@@ -51,7 +50,6 @@ class Runner:
         epochs = hyperparameters["epochs"]
         lr = hyperparameters["lr"]
 
-
         W, b = model.hyper_initial_fnn(net)
 
         optimiser = tf.keras.optimizers.Adam(learning_rate=lr)
@@ -62,15 +60,13 @@ class Runner:
         test_loss = np.zeros((epochs + 1, 1))
         while n <= epochs:
             x_train, y_train = param.minibatch()
-            train_dict, W, b = model.nn_train(
-                optimiser, W, b, x_train, y_train
-            )
+            train_dict, W, b = model.nn_train(optimiser, W, b, x_train, y_train)
 
             loss = train_dict["loss"]
 
             if n % 50 == 0:
                 x_test, y_test = param.testbatch()
-                y_pred = model.fnn(W, b, x_test) # done to prevent reloading model
+                y_pred = model.fnn(W, b, x_test)  # done to prevent reloading model
                 # print("y_test: ", y_test)
                 # print("y_pred: ", y_pred)
                 err = tf.reduce_mean(tf.square(y_test - y_pred))
@@ -115,12 +111,11 @@ class Runner:
         io.savemat(save_model_to + "/Weight_bias.mat", W_b_dict_save)
         print("Completed storing unpruned weights and biases")
 
-
     def plot(self):
         """
         Plots the model.
         """
-        # TODO: Implement this function, plot loss against epochs, 
+        # TODO: Implement this function, plot loss against epochs,
         pass
 
     def forecast(self, loaded_model, model, param, save_model_to):

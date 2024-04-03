@@ -17,7 +17,7 @@ class FNN:
         Returns:
             Tuple: Initialised weights and biases.
         """
-        with tf.device('/CPU:0'): # NOTE: if not running on Apple Silicon, comment and de-tab below 
+        with tf.device("/CPU:0"):  # NOTE: if not running on Apple Silicon, comment and de-tab below
             L = len(layers)
             W = []
             b = []
@@ -27,13 +27,19 @@ class FNN:
                 std = np.sqrt(2.0 / (in_dim + out_dim))
                 weight = tf.Variable(
                     tf.random.normal(
-                        shape=[in_dim, out_dim], stddev=std, dtype=self.tf_data_type, 
+                        shape=[in_dim, out_dim],
+                        stddev=std,
+                        dtype=self.tf_data_type,
                     ),
-                    dtype=self.tf_data_type, name=f'weight_{l}', trainable=True
+                    dtype=self.tf_data_type,
+                    name=f"weight_{l}",
+                    trainable=True,
                 )
                 bias = tf.Variable(
                     tf.zeros(shape=[out_dim], dtype=self.tf_data_type),
-                    dtype=self.tf_data_type, name=f'bias_{l}', trainable=True
+                    dtype=self.tf_data_type,
+                    name=f"bias_{l}",
+                    trainable=True,
                 )
 
                 W.append(weight)
@@ -45,9 +51,9 @@ class FNN:
         Forward pass of the FNN network.
 
         Args:
-            W (Tensor object of ndarray): Weights.
-            b (Tensor object of ndarray): Biases.
-            X (Tensor object of ndarray): Network inputs.
+            W (ndarray): Weights.
+            b (ndarray): Biases.
+            X (ndarray): Network inputs.
 
         Returns:
             Tensor object of ndarray: Output of the dense network.
@@ -59,8 +65,17 @@ class FNN:
 
         return Y
 
-    # Saving helper functions
     def save_W_b(self, W, b):
+        """
+        Save the weights and biases of the network.
+
+        Args:
+            W (ndarray): Weights.
+            b (ndarray): Biases.
+
+        Returns:
+            Tuple of ndarrays: Reformatted weights and biases.
+        """
         L = len(W)
         W_out = []
         b_out = []
@@ -102,7 +117,7 @@ class FNN:
         joint_vars = [val for pair in zip(W, b) for val in pair]
 
         gradients = tape.gradient(loss, joint_vars)
-        print("gradients: ", gradients)
+        # print("gradients: ", gradients)
         optimizer.apply(gradients, joint_vars)
 
         loss_dict = {"loss": loss, "Y_pred": y_pred}
