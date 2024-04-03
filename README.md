@@ -21,10 +21,11 @@ This code was written in Python 3.11.4, and uses the following packages:
 - matplotlib
 - scikit-learn
 
-If you don't have these packages installed, refer to the installation guide for a bash script that will install all of these packages.
+>[!TIP]
+>If you don't have these packages installed, refer to the **installation guide below** for a bash script that will install all of these packages.
 
 <details>
-<summary>**Installation Guide**</summary>
+<summary>Installation Guide</summary>
 
 ### Installation
 
@@ -48,6 +49,7 @@ Then to install packages, run the following bash script:
 chmod +x install_packages.sh
 ./install_packages.sh
 ```
+
 </details>
 
 ### Running the code
@@ -125,6 +127,7 @@ Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minib
 $$X = \max\left[0.01 \cdot (X \cdot W_i + b_i), X \cdot W_i + b_i\right]$$
 
 Where:
+
 - $X$ matrix containing the data for the layer;
 - $\max(0.01 \cdot a, b)$ leaky ReLU activation function;
 - $W_i$ matrix containing the weights of the layer;
@@ -135,18 +138,19 @@ On the final layer, ReLU is used instead of the leaky ReLU function:
 $$Y = \max(0, X \cdot W[-1] + b[-1])$$
 
 Where:
+
 - $\max(0, a)$ ReLU activation function;
 
 The model is trained using the Adam optimiser and mean squared error loss function:
 
 $$L = \frac{1}{n} \sum_{i=1}^{n} (Y_{\text{pred}} - Y_{\text{true}})^2$$
-  
+
 Where:
+
 - $L$ loss function;
 - $n$ number of samples;
 - $Y_{\text{pred}}$ predicted output;
 - $Y_{\text{true}}$ true output;
-
 
 After training and testing, which in this case is effectively validation, the model will be used to predict the impact of future projects. The current plan is for the model to output the marginal impact of every new type of energy investment in each of our selected states. Then after each year all of these investments will be added into the model to predict the impact of the next investments. This will be done for each year from 2023-2027.
 
@@ -154,8 +158,8 @@ After training and testing, which in this case is effectively validation, the mo
 
 Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and a population model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in [`consumer_growth.py`](Code/consumer_growth.py). You can change the model used in [`preprocessing.py`](Code/preprocessing.py) under the `y_data` and `pred_data` functions.
 
->[!NOTE]
->Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in [`consumer_growth.py`](Code/consumer_growth.py) under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
+> [!NOTE]
+> Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in [`consumer_growth.py`](Code/consumer_growth.py) under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
 
 <img src="Data/Images/2007Consumers_MS.jpg" height="300">
 
@@ -175,14 +179,18 @@ As the model hasn't been run yet I don't know if I was able to answer my researc
 
 ## References
 
-[^1]: `Data/sales_revenue_2001-2009.csv`: <br>
-[U.S. Energy Information Administration - FORM EIA-861M (FORMERLY EIA-826), Sales and Revenue - 1990-2009](https://www.eia.gov/electricity/data/eia861m/#netmeter) (released: 2/26/2024) <br><br>
+[^1]:
+    `Data/sales_revenue_2001-2009.csv`: <br>
+    [U.S. Energy Information Administration - FORM EIA-861M (FORMERLY EIA-826), Sales and Revenue - 1990-2009](https://www.eia.gov/electricity/data/eia861m/#netmeter) (released: 2/26/2024) <br><br>
 
-[^2]: `Data/sales_revenue_2010-2023.csv`: <br>
-[U.S. Energy Information Administration - FORM EIA-861M (FORMERLY EIA-826), Sales and Revenue - 2010-current](https://www.eia.gov/electricity/data/eia861m/#netmeter) (released: 2/26/2024) <br><br>
+[^2]:
+    `Data/sales_revenue_2010-2023.csv`: <br>
+    [U.S. Energy Information Administration - FORM EIA-861M (FORMERLY EIA-826), Sales and Revenue - 2010-current](https://www.eia.gov/electricity/data/eia861m/#netmeter) (released: 2/26/2024) <br><br>
 
-[^3]: `Data/generation_monthly.csv`: <br>
-[U.S. Energy Information Administration - EIA-923 Power Plant Operations Report, Net Generation by State by Type of Producer by Energy Source - 2001-present](https://www.eia.gov/electricity/data/state/) (released: 10/26/2023) <br><br>
+[^3]:
+    `Data/generation_monthly.csv`: <br>
+    [U.S. Energy Information Administration - EIA-923 Power Plant Operations Report, Net Generation by State by Type of Producer by Energy Source - 2001-present](https://www.eia.gov/electricity/data/state/) (released: 10/26/2023) <br><br>
 
-[^4]: `Data/plancapacity_annual.csv`: <br>
-[U.S. Energy Information Administration - EIA-860 Annual Electric Generator Report, Proposed Nameplate and Net Summer Capacity by Year, Energy Source, and State (EIA-860) - 2023-2027](https://www.eia.gov/electricity/data/state/) (released: 9/20/2023)
+[^4]:
+    `Data/plancapacity_annual.csv`: <br>
+    [U.S. Energy Information Administration - EIA-860 Annual Electric Generator Report, Proposed Nameplate and Net Summer Capacity by Year, Energy Source, and State (EIA-860) - 2023-2027](https://www.eia.gov/electricity/data/state/) (released: 9/20/2023)
