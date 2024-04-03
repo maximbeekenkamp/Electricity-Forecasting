@@ -22,14 +22,16 @@ class Runner:
             load_mode_bool (bool): Boolean for whether the 
             model should be loaded in, or built.
         """
+        bs = hyperparameters["bs"]
+        tsbs = hyperparameters["tsbs"]
 
-        param = DataSet(states)
+        param = DataSet(states, bs, tsbs, self.tf_data_type)
         model = FNN(self.tf_data_type)
 
         if not load_model_bool:
             start_time = time.perf_counter()
             time_step_0 = time.perf_counter()
-            self.builder(hyperparameters, save_model_to, model, param)
+            self.builder(hyperparameters, save_model_to, model, param, time_step_0)
             stop_time = time.perf_counter()
             print("Elapsed time (secs): %.3f" % (stop_time - start_time))
         
@@ -39,7 +41,7 @@ class Runner:
         self.forecast(loaded_model, model, param, save_model_to)
         
 
-    def builder(self, hyperparameters, save_model_to, model, param):
+    def builder(self, hyperparameters, save_model_to, model, param, time_step_0):
         """
         builds the model.
         """
@@ -48,11 +50,6 @@ class Runner:
         tsbs = hyperparameters["tsbs"]
         epochs = hyperparameters["epochs"]
         lr = hyperparameters["lr"]
-
-        x_train = param.x_train
-        y_train = param.y_train
-        x_test = param.x_test
-        y_test = param.y_test
 
 
         W, b = model.hyper_initial_fnn(net)
@@ -64,16 +61,20 @@ class Runner:
         train_loss = np.zeros((epochs + 1, 1))
         test_loss = np.zeros((epochs + 1, 1))
         while n <= epochs:
+            x_train, y_train = param.minibatch()
             train_dict, W, b = model.nn_train(
-                optimiser, x_train, y_train, W, b
+                optimiser, W, b, x_train, y_train
             )
 
             loss = train_dict["loss"]
 
             if n % 50 == 0:
+                x_test, y_test = param.testbatch()
                 y_pred = model.fnn(W, b, x_test) # done to prevent reloading model
-                err = np.mean((y_test - y_pred) ** 2 / (y_test**2 + 1e-4))
-                err = np.reshape(err, (-1, 1))
+                # print("y_test: ", y_test)
+                # print("y_pred: ", y_pred)
+                err = tf.reduce_mean(tf.square(y_test - y_pred))
+                err = err.numpy()
                 time_step_1000 = time.perf_counter()
                 T = time_step_1000 - time_step_0
                 print(
@@ -86,9 +87,10 @@ class Runner:
             test_loss[n, 0] = err
             n += 1
 
+        x_test, y_test = param.testbatch()
         y_pred = model.fnn(W, b, x_test)
-        err = np.mean((y_test - y_pred) ** 2 / (y_test**2 + 1e-4))
-        err = np.reshape(err, (-1, 1))
+        err = tf.reduce_mean(tf.square(y_test - y_pred))
+        # err = err.numpy()
         np.savetxt(save_model_to + "/err", err, fmt="%e")
         io.savemat(
             save_model_to + "/Out.mat",
@@ -118,6 +120,7 @@ class Runner:
         """
         Plots the model.
         """
+        # TODO: Implement this function, plot loss against epochs, 
         pass
 
     def forecast(self, loaded_model, model, param, save_model_to):

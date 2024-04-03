@@ -60,3 +60,5 @@ class ConsumerGrowth:
                     predicted_customers = np.round(model.predict([[year]])[0][0])
                     df.loc[(df['State'] == state) & (df['Year'] == year), 'Customers'] = predicted_customers
         return df
+    
+    # TODO: Using generic population data per state, create a model that predicts the number of consumers in each state, and then use this instead of the linear model.

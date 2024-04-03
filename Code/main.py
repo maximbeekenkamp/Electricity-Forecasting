@@ -8,13 +8,13 @@ import argparse
 from model_run import Runner
 
 np.random.seed(1234)
-tf_data_type = tf.float64
-tf.config.list_physical_devices("GPU")
+tf_data_type = tf.float32
+# tf.config.list_physical_devices("GPU")
 tf.keras.backend.clear_session()
 
 def main(load_model):
     # Create directories
-    tf.config.list_physical_devices('GPU') # NOTE: if running on Apple Silicon without tensorflow-metal, you have to run on CPU
+    # tf.config.list_physical_devices('GPU') # NOTE: if running on Apple Silicon without tensorflow-metal, you have to run on CPU
     current_directory = os.getcwd()
     model_dir = "/Saved_Model"
     save_model_to = current_directory + model_dir
@@ -26,11 +26,14 @@ def main(load_model):
 
         os.makedirs(save_model_to)
 
+    in_dim = 23 # 15 features (see README) + 8 states
+    out_dim = 1 # 1 feature (Price)
+
     hyperparameters = {
-        "net": [8, 8, 8, 8],
-        "bs": 50,
-        "tsbs": 20,
-        "epochs": 200,
+        "net": [in_dim, 32, 32, 32, out_dim],
+        "bs": 10,
+        "tsbs": 5,
+        "epochs": 1000,
         "lr": 0.001,
     }
 

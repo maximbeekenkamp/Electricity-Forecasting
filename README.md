@@ -112,6 +112,8 @@ Due to the non-linear nature of the data, a neural network model will be used to
 - wind capacity
 - wood and wood-derived fuels capacity
 
+Currently the model has layers of [23, 32, 32, 10] with full batch training. The model uses the Adam optimiser and mean squared error loss function. 
+
 After training and testing, which in this case is effectively validation, the model will be used to predict the impact of future projects. The current plan is for the model to output the marginal impact of every new type of energy investment in each of our selected states. Then after each year all of these investments will be added into the model to predict the impact of the next investments. This will be done for each year from 2023-2027.
 
 ### Consumer Number Prediction Model

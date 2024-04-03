@@ -1,0 +1,9 @@
+# Ignore data files
+.DS_Store
+
+__pycache__/
+*.pyc
+
+Data/*.csv
+
+Saved_Models/*.mat

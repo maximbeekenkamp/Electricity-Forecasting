@@ -1,12 +1,16 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 from consumer_growth import ConsumerGrowth
 
 class DataSet:
-    def __init__(self, states, modeltype="linear"):
+    def __init__(self, states, batch_size, test_batch_size, tf_data_type, modeltype="linear"):
         self.states = states
         self.modeltype = modeltype
+        self.bs = batch_size
+        self.tsbs = test_batch_size
+        self.tf_data_type = tf_data_type
         self.x_train, self.y_train, self.x_test, self.y_test, self.x_pred = self.load_data()
 
     def load_data(self):
@@ -24,22 +28,30 @@ class DataSet:
         CG = self.y_data(revenues_01_09, revenues_10_23)
         revenues = CG.df
         revenues = self.makeFloat(revenues)
-        print(revenues)
 
-        y_df = revenues.drop(columns=["Customers"])
+        y_df = revenues.drop(columns=["Customers", "State"])
         self.summary_statistics(y_df, "Y")
 
-        y_test = y_df[y_df["Year"] >= 2020]  # 2020-2023, shape (32, 3)
-        y_train = y_df[y_df["Year"] < 2020]  # 2001-2019, shape (152, 3)
+        y_test = y_df[y_df["Year"] >= 2020]  # 2020-2023, shape (32, 2)
+        y_test = y_test.drop(columns=["Year"])
+        y_train = y_df[y_df["Year"] < 2020]  # 2001-2019, shape (152, 2)
+        y_train = y_train.drop(columns=["Year"])
 
         x_df = self.x_data(capacities, revenues)
         self.summary_statistics(x_df, "X")
 
         x_test = x_df[x_df["Year"] >= 2020]  # 2020-2023, shape (32, 16)
+        print(x_test.head())
         x_train = x_df[x_df["Year"] < 2020]  # 2001-2019, shape (152, 16)
 
         x_pred = self.pred_data(future_capacities, x_train, CG)  # shape (29, 16) but the Customers column is just zeros right now
         self.summary_statistics(x_pred, "X Pred")
+
+        x_train = self.makeTensor(x_train) # shape (152, 23)
+        y_train = self.makeTensor_Y(y_train) # shape (152, 1)
+        x_test = self.makeTensor(x_test) # shape (32, 23)
+        y_test = self.makeTensor_Y(y_test) # shape (32, 1)
+        x_pred = self.makeTensor(x_pred) # shape (29, 23)
 
         return x_train, y_train, x_test, y_test, x_pred
 
@@ -200,14 +212,74 @@ class DataSet:
     
     def makeFloat(self, df):
         """
-        Converts the df to float except the Year and state columns.
+        Converts the df to float except the State column.
 
         Args:
-            df (df): The dataframe we want to convert to float.
+            df (df): The df we want to convert to float.
 
         Returns:
             df: The converted df.
         """
-        columns_to_exclude = ['Year', 'State']
-        dtypes_dict = {col: 'float' if col not in columns_to_exclude else None for col in df.columns}
+        columns_to_exclude = ['State']
+        dtypes_dict = {col: np.float32 if col not in columns_to_exclude else None for col in df.columns}
         return df.astype(dtypes_dict)
+    
+    def makeTensor(self, df):
+        """
+        Converts the df to a tensor, making it compatible with tensorflow.
+
+        Args:
+            df (df): The dataframe we want to convert to a tensor.
+
+        Returns:
+            tensor: The converted tensor.
+        """
+        state_array = np.array(df['State'].tolist())
+        df_values = df.drop(columns=['State']).values.astype(np.float32)
+        return tf.convert_to_tensor(np.concatenate([df_values, state_array], axis=1), dtype=self.tf_data_type)
+    
+    def makeTensor_Y(self, df):
+        """
+        Converts the df to a tensor, making it compatible with tensorflow. This function 
+        is specifically for the y_train and y_test dataframes, because they don't have the
+        State column.
+
+        Args:
+            df (df): The dataframe we want to convert to a tensor.
+
+        Returns:
+            tensor: The converted tensor.
+        """
+        return tf.convert_to_tensor(df, dtype=self.tf_data_type)
+    
+    def minibatch(self):
+        """
+        Generates a random batch from the training data.
+
+        Returns:
+            Tuple: Training batched params.
+        """
+        batch_id = np.random.choice(self.x_train.shape[0], self.bs, replace=False)
+        x_train = tf.gather_nd(self.x_train, tf.expand_dims(batch_id, axis=-1))
+        y_train = tf.gather_nd(self.y_train, tf.expand_dims(batch_id, axis=-1))
+
+        return x_train, y_train
+
+    def testbatch(self):
+        """
+        Generates a random batch from the test data.
+
+        Returns:
+            Tuple: Testing batched params.
+        """
+        batch_id = np.random.choice(self.x_test.shape[0], self.tsbs, replace=False)
+        x_test = tf.gather_nd(self.x_test, tf.expand_dims(batch_id, axis=-1))
+        y_test = tf.gather_nd(self.y_test, tf.expand_dims(batch_id, axis=-1))
+
+        return x_test, y_test
+    
+    # TODO: Normalise the data
+
+    # TODO: Reformat data to look at the derivative of the various data, eg population growth instead of absolute population
+    
+    # TODO: Add data processing for new population data, see consumer_growth.py
