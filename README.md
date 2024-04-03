@@ -70,7 +70,7 @@ TODO: Add a brief description of the new population data.
 
 The data was then processed by the preprocessing script. Here is a brief overview of the data that remained after preprocessing, divided by file origin:
 
-- `sales_revenue.csv` [^1] [^2] (2001-2009 & 2010-2023)
+- `sales_revenue.csv` (2001-2009 [^1] & 2010-2023 [^2])
 
   - year
   - state
@@ -150,8 +150,8 @@ After training and testing, which in this case is effectively validation, the mo
 
 Additional to the neural network, a regression will be used to simulate the number of consumers in each state in the subsequent years. This will be added to our prediction data to count for the increase in consumers over time. I have included both a linear and a population model for the number of consumers. A more complex model for the number of consumers could easily be added in the future in [`consumer_growth.py`](Code/consumer_growth.py). You can change the model used in [`preprocessing.py`](Code/preprocessing.py) under the `y_data` and `pred_data` functions.
 
-[!NOTE]
-Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in [`consumer_growth.py`](Code/consumer_growth.py) under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
+>[!NOTE]
+>Pre-2007 the EIA seemingly did not collect consumer number data, so the same model is used to predict the number of consumers in 2001-2007. Naturally, the same limitations apply to this application of the model, and could be changed if the data was available. Additionally, the number of consumers for 2007 in every state seems to be extremely low. This is likely due to a change in the way the data was collected and can be seen in the images below. As this singular data point will impact the quality of the model, I've chosen to remove it from the data replacing it with the predicted value from the model. If you would wish to change this, you can do so in [`consumer_growth.py`](Code/consumer_growth.py) under the `make_linear_model` and `apply_linear_model` or the `make_population_model` and `apply_population_model` functions.
 
 <img src="Data/Images/2007Consumers_MS.jpg" height="300">
 
