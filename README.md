@@ -16,14 +16,15 @@ This code was written in Python 3.11.4, and uses the following packages:
 
 - tensorflow
 - numpy
-- pandas
 - scipy
+- pandas
 - matplotlib
 - scikit-learn
 
-If you don't have these packages installed, refer to the installation section for a bash script that will install all of these packages.
+If you don't have these packages installed, refer to the installation guide for a bash script that will install all of these packages.
 
-### Installation
+<details>
+<summary>Installation Guide</summary>
 
 To install the required packages, you will need Python 3.8–3.11 and pip version >19.0 (or >20.3 for macOS) installed. For mac users on Apple Silicon, you will also need to install the `tensorflow-macos` package so that the code can run on GPU.
 
@@ -45,6 +46,7 @@ Then to install packages, run the following bash script:
 chmod +x install_packages.sh
 ./install_packages.sh
 ```
+</details>
 
 ### Running the code
 
