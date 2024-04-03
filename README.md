@@ -118,20 +118,20 @@ Due to the non-linear nature of the data, a neural network model will be used to
 
 Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minibatch training. For each layer $i$ the following formula is used to calculate the forward pass:
 
-$$X = \operatorname{max}(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i])$$
+$$X = \max(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i])$$
 
 Where:
 - $X$ matrix containing the data for the layer;
-- $\operatorname{max}(0.01 \cdot a, b)$ leaky ReLU activation function;
+- $\max(0.01 \cdot a, b)$ leaky ReLU activation function;
 - $W[i]$ matrix containing the weights of the layer;
 - $b[i]$ vector representing the biases of the layer;
 
 On the final layer, ReLU is used instead of the leaky ReLU function:
 
-$$Y = \operatorname{max}(0, X \cdot W[-1] + b[-1])$$
+$$Y = \max(0, X \cdot W[-1] + b[-1])$$
 
 Where:
-- $\operatorname{max}(0, a)$ ReLU activation function;
+- $\max(0, a)$ ReLU activation function;
 
 The model is trained using the Adam optimiser and mean squared error loss function:
 
