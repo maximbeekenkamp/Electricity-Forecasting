@@ -118,7 +118,9 @@ Due to the non-linear nature of the data, a neural network model will be used to
 
 Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minibatch training. For each layer $i$ the following formula is used to calculate the forward pass:
 
+```math
 $$X = \max(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i])$$
+```
 
 Where:
 - $X$ matrix containing the data for the layer;
@@ -128,7 +130,9 @@ Where:
 
 On the final layer, ReLU is used instead of the leaky ReLU function:
 
+```math
 $$Y = \max(0, X \cdot W[-1] + b[-1])$$
+```
 
 Where:
 - $\max(0, a)$ ReLU activation function;
