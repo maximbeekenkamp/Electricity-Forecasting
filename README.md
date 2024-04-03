@@ -24,7 +24,9 @@ This code was written in Python 3.11.4, and uses the following packages:
 If you don't have these packages installed, refer to the installation guide for a bash script that will install all of these packages.
 
 <details>
-<summary>Installation Guide</summary>
+<summary>**Installation Guide**</summary>
+
+### Installation
 
 To install the required packages, you will need Python 3.8–3.11 and pip version >19.0 (or >20.3 for macOS) installed. For mac users on Apple Silicon, you will also need to install the `tensorflow-macos` package so that the code can run on GPU.
 
