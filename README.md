@@ -2,6 +2,14 @@
 
 # Forecasting the regional impact of energy investments on the cost of electricity.
 
+## Introduction
+
+As the demand for sustainable energy solutions increases, it becomes essential to understand the regional economic implications of clean energy investments due to the non-transferable nature of clean electricity production. Integral to Biden's Inflation Reduction Act are tax credits for clean energy investments, but what will their impact be? Through the use of historical investment data this project aims to predict the specific impact on electricity bills of current clean energy investments on regional economies through the Inflation Reduction Act.
+
+The aim of this project is develop a tool highlighting the potential impact of energy investments on electrical prices in a specific region. This tool is intended to be useful for policy makers, investors, and energy companies looking to understand the potential impact of their investments and if it makes financial sense.
+
+Currently the program is designed to focus on the Southeastern United States, (Kentucky, Tennessee, Alabama, Mississippi, Georgia, South Carolina, North Carolina, and Florida). This was a choice to limit the scope of the project, and the majority of clean energy investments are currently concentrated in this region. It would be trivial to expand the scope of the project to include other regions, but at this stage I've chosen to focus on the Southeast and leave that for another time.
+
 ## Use Guide
 
 This code was written in Python 3.11.4, and uses the following packages:
@@ -53,14 +61,6 @@ python main.py --load
 ```
 
 To expand the program to include more states, or to adjust the hyperparameters of the model, you can edit the [`main.py`](Code/main.py) file. More extensive changes to the data or model will require changes to the [`preprocessing.py`](Code/preprocessing.py) and [`model_run.py`](Code/model_run.py) files respectively.
-
-## Introduction
-
-As the demand for sustainable energy solutions increases, it becomes essential to understand the regional economic implications of clean energy investments due to the non-transferable nature of clean electricity production. Integral to Biden's Inflation Reduction Act are tax credits for clean energy investments, but what will their impact be? Through the use of historical investment data this project aims to predict the specific impact on electricity bills of current clean energy investments on regional economies through the Inflation Reduction Act.
-
-The aim of this project is develop a tool highlighting the potential impact of energy investments on electrical prices in a specific region. This tool is intended to be useful for policy makers, investors, and energy companies looking to understand the potential impact of their investments and if it makes financial sense.
-
-Currently the program is designed to focus on the Southeastern United States, (Kentucky, Tennessee, Alabama, Mississippi, Georgia, South Carolina, North Carolina, and Florida). This was a choice to limit the scope of the project, and the majority of clean energy investments are currently concentrated in this region. It would be trivial to expand the scope of the project to include other regions, but at this stage I've chosen to focus on the Southeast and leave that for another time.
 
 ## Data Sources and Descriptions
 
@@ -118,13 +118,13 @@ Due to the non-linear nature of the data, a neural network model will be used to
 
 Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minibatch training. For each layer $i$ the following formula is used to calculate the forward pass:
 
-$$X = \max\left(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i]\right)$$
+$$X = \max\left[0.01 \cdot (X \cdot W_i + b_i), X \cdot W_i + b_i\right]$$
 
 Where:
 - $X$ matrix containing the data for the layer;
 - $\max(0.01 \cdot a, b)$ leaky ReLU activation function;
-- $W[i]$ matrix containing the weights of the layer;
-- $b[i]$ vector representing the biases of the layer;
+- $W_i$ matrix containing the weights of the layer;
+- $b_i$ vector representing the biases of the layer;
 
 On the final layer, ReLU is used instead of the leaky ReLU function:
 
