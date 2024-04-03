@@ -118,32 +118,26 @@ Due to the non-linear nature of the data, a neural network model will be used to
 
 Currently the model has fully connected layers of [23, 32, 32, 32, 1] with minibatch training. For each layer $i$ the following formula is used to calculate the forward pass:
 
-\begin{equation}
-  X = \max(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i])
-\end{equation}
+$$X = \operatorname{max}(0.01 \cdot (X \cdot W[i] + b[i]), X \cdot W[i] + b[i])$$
 
 Where:
 - $X$ matrix containing the data for the layer;
-- $\max(0.01 \cdot a, b)$ leaky ReLU activation function;
+- $\operatorname{max}(0.01 \cdot a, b)$ leaky ReLU activation function;
 - $W[i]$ matrix containing the weights of the layer;
 - $b[i]$ vector representing the biases of the layer;
 
 On the final layer, ReLU is used instead of the leaky ReLU function:
 
-\begin{equation}
-  Y = \max(0, X \cdot W[-1] + b[-1])
-\end{equation}
+$$Y = \operatorname{max}(0, X \cdot W[-1] + b[-1])$$
 
 Where:
-- $\max(0, a)$ ReLU activation function;
+- $\operatorname{max}(0, a)$ ReLU activation function;
 
 The model is trained using the Adam optimiser and mean squared error loss function:
 
-\begin{equation}
-  L = \frac{1}{n} \sum_{i=1}^{n} (Y_{\text{pred}} - Y_{\text{true}})^2
-\end{equation}
+$$L = \frac{1}{n} \sum_{i=1}^{n} (Y_{\text{pred}} - Y_{\text{true}})^2$$
   
-  Where:
+Where:
 - $L$ loss function;
 - $n$ number of samples;
 - $Y_{\text{pred}}$ predicted output;
