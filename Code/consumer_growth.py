@@ -60,8 +60,10 @@ class ConsumerGrowth:
             df: The dataframe with the missing customer data filled in.
         """
         for state in df["State"].unique():
-            state_df = df[df["State"] == state]
-            model = modeldf[modeldf["State"] == state]["Model"].values[0]
+            state_mask = df["State"] == state
+            model_mask = modeldf["State"] == state
+            state_df = df[state_mask]
+            model = modeldf[model_mask]["Model"].values[0]
 
             for year in state_df["Year"].unique():
                 if (
@@ -70,10 +72,12 @@ class ConsumerGrowth:
                     or year == 2007
                 ):
                     predicted_customers = np.round(model.predict([[year]])[0][0])
-                    df.loc[(df["State"] == state) & (df["Year"] == year), "Customers"] = predicted_customers
+                    df.loc[(state_mask) & (df["Year"] == year), "Customers"] = predicted_customers
+        df = self.firstOrdPop(df)
+        print(df)
         return df
 
-    # TODO: Using generic population data per state, create a model that predicts the number of consumers in each state, and then use this instead of the linear model.
+    # TODO: Using generic population data per state, create a model that predicts the number of customers in each state, and then use this instead of the linear model.
 
     def make_population_model(self, df):
         """
@@ -101,3 +105,22 @@ class ConsumerGrowth:
             df: The dataframe with the missing customer data filled in.
         """
         pass
+
+    def firstOrdPop(self, df):
+        """
+        Calculates the first order derivative of the customer data per state, to get 
+        the state customer growth instead of the absolute customer in each state.
+
+        Args:
+            df (df): The dataframe we want to calculate the first order derivative of.
+
+        Returns:
+            df: The dataframe with customer growth.
+        """
+        for state in df["State"].unique():
+            mask = df["State"] == state
+            state_df = df[mask]
+            state_df["Customer Growth"] = state_df["Customers"].diff().fillna(0)
+
+            df.loc[mask, "Customer Growth"] = state_df["Customer Growth"].values
+        return df

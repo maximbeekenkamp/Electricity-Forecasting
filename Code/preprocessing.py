@@ -33,6 +33,7 @@ class DataSet:
         CG = self.y_data(revenues_01_09, revenues_10_23)
         revenues = CG.df
         revenues = self.makeFloat(revenues)
+        # revenues = self.firstOrdPop(revenues)
 
         y_df = revenues.drop(columns=["Customers", "State"])
         self.summary_statistics(y_df, "Y")
@@ -181,6 +182,9 @@ class DataSet:
             index=["Year", "State"], columns="Type", values="Capacity", fill_value=0
         ).reset_index()
 
+        print("FUTURE CAPACITIES", future_capacities.head())
+        print("X TRAIN", x_train.head())
+
         # making sure that the pred data has the same shape as the data our model was trained on
         missing_columns = set(x_train.columns) - set(future_capacities.columns)
 
@@ -189,10 +193,13 @@ class DataSet:
 
         future_capacities = future_capacities[x_train.columns]
 
+        print("FUTURE CAPACITIES", future_capacities.head())
+
         future_capacities["Total"] = future_capacities.drop(
-            columns=["Year", "State", "Customers"]
+            columns=["Year", "State", "Customers", "Customer Growth"]
         ).sum(axis=1)
         future_capacities = future_capacities[x_train.columns]
+        print("FUTURE CAPACITIES", future_capacities.head())
 
         if self.modeltype == "linear":
             return self.makeFloat(
@@ -276,6 +283,9 @@ class DataSet:
             tensor: The converted tensor.
         """
         return tf.convert_to_tensor(df, dtype=self.tf_data_type)
+    
+
+        
 
     def minibatch(self):
         """
