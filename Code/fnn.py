@@ -3,9 +3,10 @@ import numpy as np
 
 
 class FNN:
-    def __init__(self, tf_data_type):
+    def __init__(self, tf_data_type, dropout_rate):
         self.tf_data_type = tf_data_type
         self.W, self.b = None, None
+        self.dropout_rate = dropout_rate
 
     def hyper_initial_fnn(self, layers):
         """
@@ -17,36 +18,36 @@ class FNN:
         Returns:
             Tuple: Initialised weights and biases.
         """
-        with tf.device("/CPU:0"):  # NOTE: if not running on Apple Silicon, comment and de-tab below
-            L = len(layers)
-            W = []
-            b = []
-            for l in range(1, L):
-                in_dim = layers[l - 1]
-                out_dim = layers[l]
-                std = np.sqrt(2.0 / (in_dim + out_dim))
-                weight = tf.Variable(
-                    tf.random.normal(
-                        shape=[in_dim, out_dim],
-                        stddev=std,
-                        dtype=self.tf_data_type,
-                    ),
+        # with tf.device("/CPU:0"):  # NOTE: if not running on Apple Silicon, comment and de-tab below
+        L = len(layers)
+        W = []
+        b = []
+        for l in range(1, L):
+            in_dim = layers[l - 1]
+            out_dim = layers[l]
+            std = np.sqrt(2.0 / (in_dim + out_dim))
+            weight = tf.Variable(
+                tf.random.normal(
+                    shape=[in_dim, out_dim],
+                    stddev=std,
                     dtype=self.tf_data_type,
-                    name=f"weight_{l}",
-                    trainable=True,
-                )
-                bias = tf.Variable(
-                    tf.zeros(shape=[out_dim], dtype=self.tf_data_type),
-                    dtype=self.tf_data_type,
-                    name=f"bias_{l}",
-                    trainable=True,
-                )
+                ),
+                dtype=self.tf_data_type,
+                name=f"weight_{l}",
+                trainable=True,
+            )
+            bias = tf.Variable(
+                tf.zeros(shape=[out_dim], dtype=self.tf_data_type),
+                dtype=self.tf_data_type,
+                name=f"bias_{l}",
+                trainable=True,
+            )
 
-                W.append(weight)
-                b.append(bias)
-            return W, b
+            W.append(weight)
+            b.append(bias)
+        return W, b
 
-    def fnn(self, W, b, X):
+    def fnn(self, W, b, X, training=False):
         """
         Forward pass of the FNN network.
 
@@ -61,9 +62,27 @@ class FNN:
         L = len(W)
         for i in range(L - 1):
             X = tf.nn.leaky_relu(tf.add(tf.matmul(X, W[i]), b[i]))
+            X = self.batch_norm(X)
+            if training:
+                X = tf.nn.dropout(X, rate=self.dropout_rate)
         Y = tf.nn.leaky_relu(tf.add(tf.matmul(X, W[-1]), b[-1]))
 
         return Y
+    
+    def batch_norm(self, X, epsilon=1e-5):
+        """
+        Batch normalization from scratch.
+
+        Args:
+            X (Tensor): Input tensor.
+            epsilon (float): Small value to avoid division by zero.
+
+        Returns:
+            Tensor: Normalised tensor.
+        """
+        mean, variance = tf.nn.moments(X, axes=0)
+        normalised_X = (X - mean) / tf.sqrt(variance + epsilon)
+        return normalised_X
 
     def save_W_b(self, W, b):
         """
@@ -111,7 +130,7 @@ class FNN:
             solution, alongside the weights and biases of the model.
         """
         with tf.GradientTape() as tape:
-            y_pred = self.fnn(W, b, X)
+            y_pred = self.fnn(W, b, X, training=True)
             loss = tf.reduce_mean(tf.square(Y - y_pred))
 
         joint_vars = [val for pair in zip(W, b) for val in pair]

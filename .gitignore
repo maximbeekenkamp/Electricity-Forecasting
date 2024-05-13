@@ -7,3 +7,5 @@ __pycache__/
 Data/*.csv
 
 Saved_Models/*.mat
+
+output.txt

@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -33,10 +34,8 @@ class DataSet:
         CG = self.y_data(revenues_01_09, revenues_10_23)
         revenues = CG.df
         revenues = self.makeFloat(revenues)
-        # revenues = self.firstOrdPop(revenues)
 
         y_df = revenues.drop(columns=["Customers", "State"])
-        self.summary_statistics(y_df, "Y")
 
         y_test = y_df[y_df["Year"] >= 2020]  # 2020-2023, shape (32, 2)
         y_test = y_test.drop(columns=["Year"])
@@ -44,16 +43,23 @@ class DataSet:
         y_train = y_train.drop(columns=["Year"])
 
         x_df = self.x_data(capacities, revenues)
-        self.summary_statistics(x_df, "X")
 
         x_test = x_df[x_df["Year"] >= 2020]  # 2020-2023, shape (32, 16)
-        print(x_test.head())
         x_train = x_df[x_df["Year"] < 2020]  # 2001-2019, shape (152, 16)
 
         x_pred = self.pred_data(
             future_capacities, x_train, CG
         )  # shape (29, 16) but the Customers column is just zeros right now
-        self.summary_statistics(x_pred, "X Pred")
+
+        x_train, y_train, x_test, y_test, x_pred = self.normalise(
+            (x_train, y_train, x_test, y_test, x_pred)
+        )
+
+        # self.summary_statistics(x_train, "x_train")
+        # self.summary_statistics(y_train, "y_train")
+        # self.summary_statistics(x_test, "x_test")
+        # self.summary_statistics(y_test, "y_test")
+        # self.summary_statistics(x_pred, "x_pred")
 
         x_train = self.makeTensor(x_train)  # shape (152, 23)
         y_train = self.makeTensor_Y(y_train)  # shape (152, 1)
@@ -102,18 +108,18 @@ class DataSet:
 
     def x_data(self, capacities, revenues):
         """
-        Processes the capacity data to remove irrelevant data and to structure the data in 
-        the correct format for the model. Effectively we merge the revenues df (- prices) 
-        and capacities df on the Year and State columns. To do this we need to 'rotate' 
-        (figuratively) the capacities df such that each Type is a new column for the same 
-        year and state. ie previously for AL in 2001 we had: 9 rows, 1 for each type of 
-        energy source, this will now become 1 row with 13 additional columns (see the 
-        Features list in the docstring / README), if a type of energy source is missing for 
+        Processes the capacity data to remove irrelevant data and to structure the data in
+        the correct format for the model. Effectively we merge the revenues df (- prices)
+        and capacities df on the Year and State columns. To do this we need to 'rotate'
+        (figuratively) the capacities df such that each Type is a new column for the same
+        year and state. ie previously for AL in 2001 we had: 9 rows, 1 for each type of
+        energy source, this will now become 1 row with 13 additional columns (see the
+        Features list in the docstring / README), if a type of energy source is missing for
         a year and state, the value should be 0. This is then repeated per year and state.
 
         Args:
             capacities (df): EIA Generation Monthly data for 2001-2023
-            revenues (df): Our y_train and y_test data, for this function we only care about 
+            revenues (df): Our y_train and y_test data, for this function we only care about
             the Customers column but it's neater to pass the whole df
 
         Returns:
@@ -182,9 +188,6 @@ class DataSet:
             index=["Year", "State"], columns="Type", values="Capacity", fill_value=0
         ).reset_index()
 
-        print("FUTURE CAPACITIES", future_capacities.head())
-        print("X TRAIN", x_train.head())
-
         # making sure that the pred data has the same shape as the data our model was trained on
         missing_columns = set(x_train.columns) - set(future_capacities.columns)
 
@@ -193,13 +196,10 @@ class DataSet:
 
         future_capacities = future_capacities[x_train.columns]
 
-        print("FUTURE CAPACITIES", future_capacities.head())
-
         future_capacities["Total"] = future_capacities.drop(
-            columns=["Year", "State", "Customers", "Customer Growth"]
+            columns=["Year", "State", "Customers"]
         ).sum(axis=1)
         future_capacities = future_capacities[x_train.columns]
-        print("FUTURE CAPACITIES", future_capacities.head())
 
         if self.modeltype == "linear":
             return self.makeFloat(
@@ -216,8 +216,9 @@ class DataSet:
             df (df): The dataframe we want the summary statistics of.
             name (str): The name of the dataframe.
         """
-        print(name + " Summary Statistics")
-        print(df.describe())
+        with pd.option_context('display.max_columns', 40, 'display.float_format', lambda x: '%.3g' % x):
+            print(name + " Summary Statistics")
+            print(df.describe(include='all'))
 
         pass
 
@@ -283,9 +284,6 @@ class DataSet:
             tensor: The converted tensor.
         """
         return tf.convert_to_tensor(df, dtype=self.tf_data_type)
-    
-
-        
 
     def minibatch(self):
         """
@@ -312,9 +310,65 @@ class DataSet:
         y_test = tf.gather_nd(self.y_test, tf.expand_dims(batch_id, axis=-1))
 
         return x_test, y_test
+    
+    def finalbatch(self):
+        """
+        Generates the final batch from the training data.
 
-    # TODO: Normalise the data
+        Returns:
+            Tuple: Final batched params.
+        """
+        return self.x_test, self.y_test
+    
+    def predbatch(self):
+        """
+        Generates a list of each input for the prediction data.
+        This allows us to predict the output for each input in the 
+        forecasting portion of the model.
 
-    # TODO: Reformat data to look at the derivative of the various data, eg population growth instead of absolute population
+        returns:
+            list: List of inputs for the prediction data.
+        """
+        return [self.x_pred[i] for i in range(self.x_pred.shape[0])]
 
-    # TODO: Add data processing for new population data, see consumer_growth.py
+    def findMax(self, df):
+        """
+        Finds the biggest value across all columns except for the state, 
+        price, and year columns.
+
+        Args:
+            df (df): Input df.
+
+        Returns:
+            float: The max value
+        """
+        columns_to_normalise = df.columns.difference(["State", "Year", "Price"])
+        max_value = df[columns_to_normalise].max().max()
+        return max_value
+
+    def normalise(self, tupleDfs):
+        """
+        Normalises the data based on the biggest value across all dfs.
+
+        Args:
+            tupleDfs (tuple): Tuple of dataframes we want to normalise.
+
+        Returns:
+            Tuple: Tuple of normalised dataframes.
+        """
+        norm_factor = 0
+        for df in tupleDfs:
+            df_max = self.findMax(df)
+            if df_max > norm_factor:
+                norm_factor = df_max
+
+        normalised_tuple = tuple()
+        for df in tupleDfs:
+            columns_to_normalise = df.columns.difference(["State", "Year", "Price"])
+            normalised_df = df.copy()
+            normalised_df[columns_to_normalise] = (
+                normalised_df[columns_to_normalise] / norm_factor
+            )
+            normalised_tuple += (normalised_df,)
+
+        return normalised_tuple

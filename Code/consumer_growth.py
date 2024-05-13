@@ -74,11 +74,10 @@ class ConsumerGrowth:
                     predicted_customers = np.round(model.predict([[year]])[0][0])
                     df.loc[(state_mask) & (df["Year"] == year), "Customers"] = predicted_customers
         df = self.firstOrdPop(df)
-        print(df)
         return df
 
-    # TODO: Using generic population data per state, create a model that predicts the number of customers in each state, and then use this instead of the linear model.
 
+    # TODO: Using generic population data per state, create a model that predicts the number of customers in each state, and then use this instead of the linear model.
     def make_population_model(self, df):
         """
         Creates a dataframe containing a linear model to fill in the missing customer 
@@ -120,7 +119,7 @@ class ConsumerGrowth:
         for state in df["State"].unique():
             mask = df["State"] == state
             state_df = df[mask]
-            state_df["Customer Growth"] = state_df["Customers"].diff().fillna(0)
+            state_df.loc[:, "Customers"] = state_df["Customers"].diff().fillna(0)
 
-            df.loc[mask, "Customer Growth"] = state_df["Customer Growth"].values
+            df.loc[mask, "Customers"] = state_df["Customers"].values
         return df

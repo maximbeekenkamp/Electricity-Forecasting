@@ -31,11 +31,14 @@ def main(load_model):
     out_dim = 1  # 1 feature (Price)
 
     hyperparameters = {
-        "net": [in_dim, 32, 32, 32, out_dim],
+        "net": [in_dim, 32, 32, out_dim],
         "bs": 10,
-        "tsbs": 5,
+        "tsbs": 32,
         "epochs": 1000,
-        "lr": 0.001,
+        "lr": 0.13,
+        "lr decay rate": 0.001,
+        "dropout_rate": 0.2,
+
     }
 
     states = ["KY", "TN", "AL", "MS", "GA", "SC", "NC", "FL"]

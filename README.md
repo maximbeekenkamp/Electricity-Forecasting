@@ -102,6 +102,25 @@ Using a 80/20 split, the data was divided into a training and testing set. The t
 
 ### Basic Model Overview
 
+As with many data science tasks, current state-of-the-art energy forecasting models use some form of AI. As shown by \cite{lstm} and \cite{transformers}, the state-of-the art has moved towards Recurrent Neural Networks (RNNs) and Transformers for solving these tasks. Given that I am already exploring these models in my text-analysis project, I decided to look into what was just a few years ago considered the frontier for the field, Deep Learning models (DL). As highlighted by \cite{whyDL} DL stands out for its ability to handle large amounts of information, and are particularly well-suited for medium-term and long-term predictions. This made it an obvious choice for this project. \\
+
+After preprocessing the data, it is fed into a feed forward network with t
+
+| Hyperparameter             | Value               |
+|----------------------------|---------------------|
+| Network Architecture       | [23, 32, 32, 1]     |
+| Batch Size                 | 10                  |
+| Test Batch Size            | 5                   |
+| Epochs                     | 1000                |
+| Learning Rate              | 0.01                |
+| Learning Decay Rate        | 0.001               |
+| Dropout Rate               | 0.2                 |
+
+The 23 input neurons reflect the 23 input features (15 features and 8 states), and the single output neuron represents the predicted electricity price. The two hidden layers of 32 neurons each provide the model with the capacity to learn complex relationships between the input features and the output price. To balance between computation efficiency and gradient noise reduction, a batch size of 10, and a test batch size of 5 were selected. The model is trained over 1000 epochs to provide ample opportunity for the model to converge to an optimal solution.
+
+The learning rate was determined through iterative experimentation and convergence analysis, and was found to be 0.001695. See the figure below. Starting at 25% of the total epochs, the learning rate decay allows the model to reduce the learning rate as training progresses, to prevent overshooting and enhance convergence. Additionally, a dropout rate of 0.2 was applied to the hidden layers to mitigate overfitting by randomly dropping out 20% of the units during training, and batch normalisation was applied to the input layers encouraging the network to learn more generalized representations of the data.
+
+
 Due to the non-linear nature of the data, a neural network model will be used to predict the impact of clean energy investments. As previously mentioned, the model will be trained on data from 2001-2019 and tested on data from 2020-2023. The model will have the following features:
 
 - year
